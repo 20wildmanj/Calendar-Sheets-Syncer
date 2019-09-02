@@ -19,6 +19,7 @@
 //9/2/19 the program is now optimized in terms of deleting and readding everything, seems to work fine but I will do some more debugging to ensure it works, also started using github
 //fixed some bugs involving events not deleting and some events being incorrectly deleted
 //built in edit-sync since new code works differently
+//completed formatting function that automatically gets rid of empty row between rows filled in with events, just for ease of use I guess
 
 
 var eventRange = "A4:E30";
@@ -31,16 +32,32 @@ var now = new Date();
 function formatSheet(){ //trying to automatically format sheet if events removed, need to figure out how to make it go all the way up without getting stuck in loop
    var allEvents = spreadsheet.getRange(eventRange).getValues();
    var allEvents2 = spreadsheet.getRange(eventRange);
-   for(i=0;i < allEvents.length-1;i++){
-     if (allEvents[i][0] == ""){
-       for(j=0;j < allEvents[i].length;j++){
-         allEvents[i][j] = allEvents[i+1][j];
-         allEvents[i+1][j] = "";
+  console.log("!: " + allEvents[10]);
+  console.log("!!!!: " + allEvents2);
+  if (allEvents[0][0] == ""){
+    for(j=0;j < 5;j++){
+       allEvents[0][j] = allEvents[1][j];
+           allEvents[1][j] = "";}
+    }
+  
+   for(i=1;i < allEvents.length;i++){
+     if (allEvents[i][0] != ""&& i != 1 && allEvents[i-1][0] == ""){
+       var w = i;
+       while(w != 0 && allEvents[w-1][0] == ""){
+         //allEvents[w-1][0] = allEvents[w][0];
+         //allEvents[w][0] = "_";
+         for(j=0;j < 5;j++){
+         allEvents[w-1][j] = allEvents[w][j];
+           allEvents[w][j] = "";}
+         w--;
+         
        }
      }
+     }
+     allEvents2.setValues(allEvents);
+
   }
-  allEvents2.setValues(allEvents);
-}
+ 
 
 
 function removeOutdatedEvents(){ //removes any outdated events from spreadsheet and calendar
