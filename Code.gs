@@ -18,6 +18,7 @@
 //To do: optimize code so that auto deleting events and then re adding them to calendar no longer happens, need to split up event creation into already created spreadsheet events, already created calendar events, and new spreadsheet events
 //9/2/19 the program is now optimized in terms of deleting and readding everything, seems to work fine but I will do some more debugging to ensure it works, also started using github
 //fixed some bugs involving events not deleting and some events being incorrectly deleted
+//built in edit-sync since new code works differently
 
 
 var eventRange = "A4:E30";
@@ -171,14 +172,24 @@ function sheetsToCalendar() {
     spreadsheetVal = false;
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
       if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, removes spreadsheet data
-        /*allEvents[j][0] = "";
-        allEvents[j][1] = "";
-        allEvents[j][2] = "";
-        allEvents[j][3] = "";
-        allEvents[j][4] = "";*/
-        //events[i].setDescription("AUTODEL");
-          //events[i].deleteEvent(); //removes event to complete removal
-        events[i].setColor("5");
+          var eventStart = new Date(events[i].getStartTime());
+          var sheetStart = new Date(allEvents[j][1]);
+          var eventEnd = new Date(events[i].getEndTime());
+          var sheetEnd = new Date(allEvents[j][2]);
+        if (eventStart.getTime() != sheetStart.getTime() || eventEnd.getTime() != sheetEnd.getTime()){
+          //allEvents[j][1] != events[i].getStartTime() || allEvents[j][1] != events[i].getEndTime()
+          events[i].setTime(allEvents[j][1],allEvents[j][2]);
+          console.log("start time diff: " + allEvents[j][1] + " " + allEvents[j][2] + " " + events[i].getStartTime());
+        }
+        if (events[i].getLocation() != allEvents[j][3]){
+          console.log("location diff: " + allEvents[j][3]);
+          events[i].setLocation(allEvents[j][3]);
+        }
+        if (events[i].getDescription() != allEvents[j][4]){
+          console.log("desc diff: " + allEvents[j][4]);
+          events[i].setDescription(allEvents[j][4]);
+        }
+         events[i].setColor("5");
          console.log("Match found: " + allEvents[j][0]);
           spreadsheetVal = true;
           break;
@@ -233,6 +244,7 @@ function sheetsToCalendar() {
           event2.setLocation(location);
           event2.setTag("eventId","spreadsheet");
           event2.setColor("10");
+          console.log("created new event " + event[0]);
         }
       catch(e){
         console.error('new sheet event sync yielded an error: ' + e);
@@ -240,70 +252,13 @@ function sheetsToCalendar() {
     }
   
   }
-/*
-for (i=0;i<events.length;i++){
-  
-  if(events[i].getTag("eventId") == "spreadsheet"){ //deletes all previous events that were tagged as created by spreadsheet
-    events[i].setDescription("AUTODEL");
-    events[i].deleteEvent();
-  } else { //else if user created spreadsheet
-    for (j=i;j<allEvents.length;j++){ //maybe check vals later
-      try{
-        if (allEvents[j][0] == ""){  //finds first empty row
-          allEvents[j][0] = events[i].getTitle();
-          allEvents[j][1] = events[i].getStartTime();
-          allEvents[j][2] = events[i].getEndTime();
-          allEvents[j][3] = events[i].getLocation();
-          allEvents[j][4] = events[i].getDescription();
-          events[i].setDescription("AUTODEL");
-          events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
-          break;
-        }*/
-        //var event = allEvents2[j].getValues();
-        //var eventTitle = allEvents[j][0];
-        //if (eventTitle == ""){
-          //allEvents2[j].setValue("SYNC");
-        /*
-        var cell = spreadsheet.getRange(j,0);
-          cell.setValue(events[i].getTitle());
-          allEvents2.setValue(events[i].getTitle());
-          console.log(allEvents2);
-          */
-          
-       
-        //}
-     /* }  catch(e){
-    console.error('calendar sync yielded an error: ' + e);
-      }
-    }
-  }
- }*/
+
 
     allEvents2.setValues(allEvents);
 
   
   
-  
- 
-  /*
-for (x=0;x<allEvents.length;x++) { //creates events from spreadsheet values
-  try{
-    var event = allEvents[x];
-    var eventTitle = event[0];
-    var startTime = event[1];
-    var endTime = event[2];
-    var location = event[3]
-    var notes = event[4];
-    var event = eventCal.createEvent(eventTitle,startTime,endTime, {description: notes});
-    event.setLocation(location);
-    event.setTag("eventId","spreadsheet");
-    event.setColor("10");
-  }
-  catch(e){
-    console.error('sheetsToCalendar() yielded an error: ' + e);
-  }
-}
-*/
+
 }
 
 function onOpen(){ //creates button next to help that runs the function without needing to open script editor
