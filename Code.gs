@@ -17,7 +17,7 @@
   //9/1/19 update 2: just found that there are too many events cluttering up the API, which screwed up manual delete since when retrieving API data not all events were returned
 //To do: optimize code so that auto deleting events and then re adding them to calendar no longer happens, need to split up event creation into already created spreadsheet events, already created calendar events, and new spreadsheet events
 //9/2/19 the program is now optimized in terms of deleting and readding everything, seems to work fine but I will do some more debugging to ensure it works, also started using github
-
+//fixed some bugs involving events not deleting and some events being incorrectly deleted
 
 
 var eventRange = "A4:E30";
@@ -96,7 +96,7 @@ function removeManualDeletedEvents(){
      if (remove == true && allEvents[j][0] != ""){ //if item in spreadsheet does not have counter part in calendar
        for(w=0;w<eventsAPI.length;w++){ //goes through all previous events, including deleted events
          //console.log("a " + allEvents[j][0] + " j " + eventsAPI[w].summary);
-         if(allEvents[j][0] == eventsAPI[w].summary){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
+         if(allEvents[j][0] == eventsAPI[w].summary && eventsAPI[w].description != "AUTODEL"){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
            
            console.log(allEvents[j][0] + "deleted");
            allEvents[j][0] = "";
@@ -187,6 +187,7 @@ function sheetsToCalendar() {
     }
     if (spreadsheetVal == false){
       if (events[i].getTag("eventId") == "spreadsheet"){
+          events[i].setDescription("AUTODEL");
           events[i].deleteEvent();
       } else {
         for (j=0;j<allEvents.length;j++){ //maybe check vals later
