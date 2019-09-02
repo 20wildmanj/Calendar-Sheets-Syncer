@@ -16,7 +16,7 @@
   //the new solution I came up with seems much simpler, but still has the issue about identical event titles, but that can be somewhat fixed by looking at time signatures instead
   //9/1/19 update 2: just found that there are too many events cluttering up the API, which screwed up manual delete since when retrieving API data not all events were returned
 //To do: optimize code so that auto deleting events and then re adding them to calendar no longer happens, need to split up event creation into already created spreadsheet events, already created calendar events, and new spreadsheet events
-
+//9/2/19 the program is now optimized in terms of deleting and readding everything, seems to work fine but I will do some more debugging to ensure it works, also started using github
 
 
 
@@ -95,7 +95,7 @@ function removeManualDeletedEvents(){
      }
      if (remove == true && allEvents[j][0] != ""){ //if item in spreadsheet does not have counter part in calendar
        for(w=0;w<eventsAPI.length;w++){ //goes through all previous events, including deleted events
-         console.log("a " + allEvents[j][0] + " j " + eventsAPI[w].summary);
+         //console.log("a " + allEvents[j][0] + " j " + eventsAPI[w].summary);
          if(allEvents[j][0] == eventsAPI[w].summary){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
            
            console.log(allEvents[j][0] + "deleted");
@@ -155,6 +155,8 @@ function sheetsToCalendar() {
   removeOutdatedEvents();
   removeManualDeletedEvents();
   
+  
+  
   var allEvents = spreadsheet.getRange(eventRange).getValues();
   var allEvents2 = spreadsheet.getRange(eventRange);
 
@@ -163,7 +165,77 @@ function sheetsToCalendar() {
   var oneYearFromNow = new Date(now.getTime() + (360*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
   var events = eventCal.getEvents(oneYearBefore, oneYearFromNow);
   
+  var spreadsheetVal = false;
+  var eventVal = false;
+  for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
+    spreadsheetVal = false;
+    for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
+      if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, removes spreadsheet data
+        /*allEvents[j][0] = "";
+        allEvents[j][1] = "";
+        allEvents[j][2] = "";
+        allEvents[j][3] = "";
+        allEvents[j][4] = "";*/
+        //events[i].setDescription("AUTODEL");
+          //events[i].deleteEvent(); //removes event to complete removal
+        events[i].setColor("5");
+         console.log("Match found: " + allEvents[j][0]);
+          spreadsheetVal = true;
+          break;
+        
+      }
+    }
+    if (spreadsheetVal == false){
+      for (j=0;j<allEvents.length;j++){ //maybe check vals later
+      try{
+        if (allEvents[j][0] == ""){  //finds first empty row
+          allEvents[j][0] = events[i].getTitle();
+          allEvents[j][1] = events[i].getStartTime();
+          allEvents[j][2] = events[i].getEndTime();
+          allEvents[j][3] = events[i].getLocation();
+          allEvents[j][4] = events[i].getDescription();
+          console.log("New Event Added from calendar: " + allEvents[j][0]);
+          //events[i].setDescription("AUTODEL");
+          //events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
+          break;
+        }
+       
+      }  catch(e){
+    console.error('new cal sync yielded an error: ' + e);
+      }
+    }
+      
+    }
+  }
+  for (i=0; i<allEvents.length;i++){
+    eventVal = false;
+    for(j=0; j<events.length;j++){
+      if(allEvents[i][0] == events[j].getTitle()){
+        eventVal = true;
+        console.log("spreadsheet check: " + allEvents[i][0] + " " + events[j].getTitle());
+      }
+    }
+    if(allEvents[i][0] != "" && eventVal == false){
+      console.log("spreadsheetEvent found: " +  allEvents[i][0]);
+        try{
+          var event = allEvents[i];
+          var eventTitle = event[0];
+          var startTime = event[1];
+          var endTime = event[2];
+          var location = event[3]
+          var notes = event[4];
+          var event2 = eventCal.createEvent(eventTitle,startTime,endTime, {description: notes});
+          event2.setLocation(location);
+          event2.setTag("eventId","spreadsheet");
+          event2.setColor("10");
+        }
+      catch(e){
+        console.error('new sheet event sync yielded an error: ' + e);
+      }
+    }
   
+  }
+/*
 for (i=0;i<events.length;i++){
   
   if(events[i].getTag("eventId") == "spreadsheet"){ //deletes all previous events that were tagged as created by spreadsheet
@@ -181,7 +253,7 @@ for (i=0;i<events.length;i++){
           events[i].setDescription("AUTODEL");
           events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
           break;
-        }
+        }*/
         //var event = allEvents2[j].getValues();
         //var eventTitle = allEvents[j][0];
         //if (eventTitle == ""){
@@ -195,21 +267,20 @@ for (i=0;i<events.length;i++){
           
        
         //}
-      }  catch(e){
+     /* }  catch(e){
     console.error('calendar sync yielded an error: ' + e);
       }
     }
   }
- }
-  allEvents2.setValues(allEvents);
+ }*/
+
+    allEvents2.setValues(allEvents);
 
   
   
   
-  allEvents = spreadsheet.getRange(eventRange).getValues();  
-  
  
-  
+  /*
 for (x=0;x<allEvents.length;x++) { //creates events from spreadsheet values
   try{
     var event = allEvents[x];
@@ -227,6 +298,7 @@ for (x=0;x<allEvents.length;x++) { //creates events from spreadsheet values
     console.error('sheetsToCalendar() yielded an error: ' + e);
   }
 }
+*/
 }
 
 function onOpen(){ //creates button next to help that runs the function without needing to open script editor
