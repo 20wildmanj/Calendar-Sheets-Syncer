@@ -133,43 +133,13 @@ function removeManualDeletedEvents(){
          //console.log(allEvents[j][0]);
          //console.log(formattedDate);
   
-  /*for(i=0;i<eventsAPI.length;i++){ PREVIOUS VERSION OF FUNCTION, ENDED UP DELETING ALL DATA IN SPREADSHEET
-  
-    //console.log(events[i].description);
-    for(j=0;j < allEvents.length;j++){
-      if(allEvents[j][0] == eventsAPI[i].summary && eventsAPI[i].description != "AUTODEL"){
-        for(w=0;w<events.length;w++){
-          if(events[w].getTitle() == allEvents[j][0]){
-           break; 
-            allEvents[j][0] = "";
-            allEvents[j][1] = "";
-        allEvents[j][2] = "";
-        allEvents[j][3] = "";
-        allEvents[j][4] = "";
-          } else {
-            
-            console.log(allEvents[j][0]);
-            break;
-          }
-        }
-       // for (u=0;u<events.length;u++){
-         // if(events[u].getTitle() == eve
-        //allEvents[j][0] = "";
-        //allEvents[j][1] = "";
-       // allEvents[j][2] = "";
-        //allEvents[j][3] = "";
-        //allEvents[j][4] = "";
-       
-    }
-    
-  }
-  }*/
+
   
    allEvents2.setValues(allEvents);
 }
 
 function sheetsToCalendar() { 
-  
+  formatSheet();
   removeOutdatedEvents();
   removeManualDeletedEvents();
   
