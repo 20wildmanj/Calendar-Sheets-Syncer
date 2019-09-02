@@ -186,27 +186,31 @@ function sheetsToCalendar() {
       }
     }
     if (spreadsheetVal == false){
-      for (j=0;j<allEvents.length;j++){ //maybe check vals later
-      try{
-        if (allEvents[j][0] == ""){  //finds first empty row
-          allEvents[j][0] = events[i].getTitle();
-          allEvents[j][1] = events[i].getStartTime();
-          allEvents[j][2] = events[i].getEndTime();
-          allEvents[j][3] = events[i].getLocation();
-          allEvents[j][4] = events[i].getDescription();
-          console.log("New Event Added from calendar: " + allEvents[j][0]);
-          //events[i].setDescription("AUTODEL");
-          //events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
-          break;
+      if (events[i].getTag("eventId") == "spreadsheet"){
+          events[i].deleteEvent();
+      } else {
+        for (j=0;j<allEvents.length;j++){ //maybe check vals later
+          try{
+            if (allEvents[j][0] == ""){  //finds first empty row
+              allEvents[j][0] = events[i].getTitle();
+              allEvents[j][1] = events[i].getStartTime();
+              allEvents[j][2] = events[i].getEndTime();
+              allEvents[j][3] = events[i].getLocation();
+              allEvents[j][4] = events[i].getDescription();
+              console.log("New Event Added from calendar: " + allEvents[j][0]);
+              //events[i].setDescription("AUTODEL");
+              //events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
+              break;
+            }
+            
+          }  catch(e){
+          console.error('new cal sync yielded an error: ' + e);
         }
-       
-      }  catch(e){
-    console.error('new cal sync yielded an error: ' + e);
       }
-    }
       
     }
   }
+}
   for (i=0; i<allEvents.length;i++){
     eventVal = false;
     for(j=0; j<events.length;j++){
