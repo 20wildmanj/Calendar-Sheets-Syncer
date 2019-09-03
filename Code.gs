@@ -20,7 +20,7 @@
 //fixed some bugs involving events not deleting and some events being incorrectly deleted
 //built in edit-sync since new code works differently
 //completed formatting function that automatically gets rid of empty row between rows filled in with events, just for ease of use I guess
-
+//To do: Rigorous testing, email reminders with seperate array
 
 var eventRange = "A4:E30";
 var spreadsheet = SpreadsheetApp.getActiveSheet();
@@ -176,7 +176,7 @@ function sheetsToCalendar() {
           console.log("desc diff: " + allEvents[j][4]);
           events[i].setDescription(allEvents[j][4]);
         }
-         events[i].setColor("5");
+         events[i].setColor("9");
          console.log("Match found: " + allEvents[j][0]);
           spreadsheetVal = true;
           break;
@@ -230,7 +230,7 @@ function sheetsToCalendar() {
           var event2 = eventCal.createEvent(eventTitle,startTime,endTime, {description: notes});
           event2.setLocation(location);
           event2.setTag("eventId","spreadsheet");
-          event2.setColor("10");
+          event2.setColor("9");
           console.log("created new event " + event[0]);
         }
       catch(e){
