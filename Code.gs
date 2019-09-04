@@ -196,6 +196,7 @@ function sheetsToCalendar() {
               allEvents[j][2] = events[i].getEndTime();
               allEvents[j][3] = events[i].getLocation();
               allEvents[j][4] = events[i].getDescription();
+              events[i].setTag("eventId","spreadsheet");
               console.log("New Event Added from calendar: " + allEvents[j][0]);
               //events[i].setDescription("AUTODEL");
               //events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
@@ -245,6 +246,7 @@ function sheetsToCalendar() {
 
   
   
+    formatSheet();
 
 }
 
