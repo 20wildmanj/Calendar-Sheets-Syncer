@@ -22,7 +22,7 @@
 //completed formatting function that automatically gets rid of empty row between rows filled in with events, just for ease of use I guess
 //To do: Rigorous testing, email reminders with seperate array
 
-var eventRange = "A4:E30";
+var eventRange = "A4:G30";
 var spreadsheet = SpreadsheetApp.getActiveSheet();
 var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
@@ -36,11 +36,13 @@ function sendEmail(){
   for(i=0;i < allEvents.length;i++){
     if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
       
+      
       var recipientsTO = allEvents[i][6];
+      
       var recipientsCC = "joebewildman@gmail.com";
       var formattedTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
       var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedTime;
-      var html = header + message;
+     
       var body = HtmlService.createTemplateFromFile("emailFormat");
   
       body.eventName = allEvents[i][0];
@@ -64,7 +66,7 @@ function formatSheet(){ //trying to automatically format sheet if events removed
   console.log("!: " + allEvents[10]);
   console.log("!!!!: " + allEvents2);
   if (allEvents[0][0] == ""){
-    for(j=0;j < 5;j++){
+    for(j=0;j < 7 ; j++){
        allEvents[0][j] = allEvents[1][j];
            allEvents[1][j] = "";}
     }
@@ -75,7 +77,7 @@ function formatSheet(){ //trying to automatically format sheet if events removed
        while(w != 0 && allEvents[w-1][0] == ""){
          //allEvents[w-1][0] = allEvents[w][0];
          //allEvents[w][0] = "_";
-         for(j=0;j < 5;j++){
+         for(j=0;j < 7 ; j++){
          allEvents[w-1][j] = allEvents[w][j];
            allEvents[w][j] = "";}
          w--;
@@ -104,6 +106,9 @@ function removeOutdatedEvents(){ //removes any outdated events from spreadsheet 
         allEvents[j][2] = "";
         allEvents[j][3] = "";
         allEvents[j][4] = "";
+        allEvents[j][5] = "";
+        allEvents[j][6] = "";
+
         events[i].setDescription("AUTODEL");
           events[i].deleteEvent(); //removes event to complete removal
           break;
@@ -151,6 +156,9 @@ function removeManualDeletedEvents(){
            allEvents[j][2] = "";
            allEvents[j][3] = "";
            allEvents[j][4] = "";
+           allEvents[j][5] = "";
+           allEvents[j][6] = "";
+
          }
        }
      }
