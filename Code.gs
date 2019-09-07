@@ -21,6 +21,7 @@
 //built in edit-sync since new code works differently
 //completed formatting function that automatically gets rid of empty row between rows filled in with events, just for ease of use I guess
 //To do: Rigorous testing, email reminders with seperate array
+//9/7/19 added basic email sending, to do: send day before only once, too tired now
 
 var eventRange = "A4:G30";
 var spreadsheet = SpreadsheetApp.getActiveSheet();
