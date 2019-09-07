@@ -27,7 +27,29 @@ var spreadsheet = SpreadsheetApp.getActiveSheet();
 var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
 var now = new Date();
+function sendEmail(){
+  var allEvents = spreadsheet.getRange("A4:G30").getValues();
+  var allEvents2 = spreadsheet.getRange("A4:G30");
+  for(i=0;i < allEvents.length;i++){
+    if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
+       var message = "This is a test of HTML <br><br> Line two " + allEvents[i][0];
 
+      var recipientsTO = allEvents[i][6];
+      var recipientsCC = "joebewildman@gmail.com";
+      var Subject = "Event Reminder: " + allEvents[i][0] + ", " + allEvents[i][1];
+      var html = message;
+
+      MailApp.sendEmail({
+        to: recipientsTO,
+        cc: recipientsCC,
+        subject: Subject,
+        htmlBody: html
+      });
+    }
+  }
+  var emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+  console.log(emailQuotaRemaining);
+}
 
 function formatSheet(){ //trying to automatically format sheet if events removed, need to figure out how to make it go all the way up without getting stuck in loop
    var allEvents = spreadsheet.getRange(eventRange).getValues();
