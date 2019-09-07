@@ -27,23 +27,30 @@ var spreadsheet = SpreadsheetApp.getActiveSheet();
 var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
 var now = new Date();
+
+
+
 function sendEmail(){
   var allEvents = spreadsheet.getRange("A4:G30").getValues();
   var allEvents2 = spreadsheet.getRange("A4:G30");
   for(i=0;i < allEvents.length;i++){
     if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
-       var message = "This is a test of HTML <br><br> Line two " + allEvents[i][0];
-
+      
       var recipientsTO = allEvents[i][6];
       var recipientsCC = "joebewildman@gmail.com";
-      var Subject = "Event Reminder: " + allEvents[i][0] + ", " + allEvents[i][1];
-      var html = message;
-
+      var formattedTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
+      var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedTime;
+      var html = header + message;
+      var body = HtmlService.createTemplateFromFile("emailFormat");
+  
+      body.eventName = allEvents[i][0];
+      body.eventDate = formattedTime;
+      body.eventLocation = allEvents[i][3];
       MailApp.sendEmail({
         to: recipientsTO,
         cc: recipientsCC,
         subject: Subject,
-        htmlBody: html
+        htmlBody: body.evaluate().getContent()
       });
     }
   }
