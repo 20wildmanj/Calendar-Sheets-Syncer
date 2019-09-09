@@ -34,39 +34,54 @@ var now = new Date();
 function sendEmail(){
   var allEvents = spreadsheet.getRange("A4:G30").getValues();
   var allEvents2 = spreadsheet.getRange("A4:G30");
+  var now = new Date();
   for(i=0;i < allEvents.length;i++){
    
     if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
-      var oneYearBefore = new Date(now.getTime() - (80*24 * 60 * 60 * 1000)); //used to find events from one year to two weeks before now
-      var oneYearFromNow = new Date(now.getTime() + (360*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
-      var events = eventCal.getEvents(oneYearBefore, oneYearFromNow);
-      var selectedEvent = 0;
-      for (j = 0; j < events.length; j++){
-        if (events[j].getTitle() == allEvents[i][0]){
-          selectedEvent = j;
-          break;
-        }
-      }
-      if (events[selectedEvent].getTag("email") == "NO"){
-        console.log(events[selectedEvent].getTitle());
       
-      var recipientsTO = allEvents[i][6];
-      var recipientsCC = "joebewildman@gmail.com";
-      var formattedTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
-      var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedTime;
-     
-      var body = HtmlService.createTemplateFromFile("emailFormat");
-  
-      body.eventName = allEvents[i][0];
-      body.eventDate = formattedTime;
-      body.eventLocation = allEvents[i][3];
-      MailApp.sendEmail({
-        to: recipientsTO,
-        cc: recipientsCC,
-        subject: Subject,
-        htmlBody: body.evaluate().getContent()
-      });
-        events[selectedEvent].setTag("email","YES");
+      var TwoDaysFromNow = new Date(now.getTime() + (2*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
+      var events = eventCal.getEvents(new Date(now.getTime()), TwoDaysFromNow);
+      
+      var selectedEvent = 0;
+      if (events.length > 0){
+        for (j = 0; j < events.length; j++){
+          if (events[j].getTitle() == allEvents[i][0] && allEvents[i][0] != ""){
+            selectedEvent = j;
+            break;
+          }
+        }
+        console.log(events[selectedEvent].getTitle());
+       
+        var timeDiff = (events[selectedEvent].getStartTime() - now.getTime())/(24*60*60*1000);
+        console.log("event name: " + events[selectedEvent].getTitle());
+        console.log("event: " + events[selectedEvent].getStartTime());
+        console.log("now: " + now.getTime());
+        console.log("test " + timeDiff);
+        console.log(timeDiff <= 1.0);
+        if (events[selectedEvent].getTag("email") == "NO" && timeDiff <= 1.0){
+          console.log("new email needed " + events[selectedEvent].getTitle());
+          
+          var recipientsTO = allEvents[i][6];
+          var recipientsCC = "joebewildman@gmail.com";
+          var formattedStartTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
+          var formattedEndTime = Utilities.formatDate(allEvents[i][2], Session.getScriptTimeZone(), "h:mm a");
+
+          var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedStartTime;
+          
+          var body = HtmlService.createTemplateFromFile("emailFormat");
+          
+          body.eventName = allEvents[i][0];
+          body.eventStartDate = formattedStartTime;
+          body.eventEndDate = formattedEndTime;
+          body.eventLocation = allEvents[i][3];
+          MailApp.sendEmail({
+            to: recipientsTO,
+            cc: recipientsCC,
+            subject: Subject,
+            htmlBody: body.evaluate().getContent()
+          });
+          events[selectedEvent].setTag("email","YES");
+      }
       }
     }
   }
@@ -307,5 +322,8 @@ function onOpen(){ //creates button next to help that runs the function without 
 var ui = SpreadsheetApp.getUi();
 ui.createMenu("Sync")
   .addItem( "Sync calendar","sheetsToCalendar")
+.addToUi();
+ui.createMenu("Reminder")
+  .addItem( "Manually send reminder","sendEmail")
 .addToUi();
 }
