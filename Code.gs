@@ -35,11 +35,22 @@ function sendEmail(){
   var allEvents = spreadsheet.getRange("A4:G30").getValues();
   var allEvents2 = spreadsheet.getRange("A4:G30");
   for(i=0;i < allEvents.length;i++){
+   
     if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
-      
+      var oneYearBefore = new Date(now.getTime() - (80*24 * 60 * 60 * 1000)); //used to find events from one year to two weeks before now
+      var oneYearFromNow = new Date(now.getTime() + (360*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
+      var events = eventCal.getEvents(oneYearBefore, oneYearFromNow);
+      var selectedEvent = 0;
+      for (j = 0; j < events.length; j++){
+        if (events[j].getTitle() == allEvents[i][0]){
+          selectedEvent = j;
+          break;
+        }
+      }
+      if (events[selectedEvent].getTag("email") == "NO"){
+        console.log(events[selectedEvent].getTitle());
       
       var recipientsTO = allEvents[i][6];
-      
       var recipientsCC = "joebewildman@gmail.com";
       var formattedTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
       var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedTime;
@@ -55,6 +66,8 @@ function sendEmail(){
         subject: Subject,
         htmlBody: body.evaluate().getContent()
       });
+        events[selectedEvent].setTag("email","YES");
+      }
     }
   }
   var emailQuotaRemaining = MailApp.getRemainingDailyQuota();
@@ -196,7 +209,7 @@ function sheetsToCalendar() {
   for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
     spreadsheetVal = false;
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
-      if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, removes spreadsheet data
+      if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, updates spreadsheet data
           var eventStart = new Date(events[i].getStartTime());
           var sheetStart = new Date(allEvents[j][1]);
           var eventEnd = new Date(events[i].getEndTime());
@@ -221,7 +234,7 @@ function sheetsToCalendar() {
         
       }
     }
-    if (spreadsheetVal == false){
+    if (spreadsheetVal == false){ //if calendar event not in spreadsheet
       if (events[i].getTag("eventId") == "spreadsheet"){
           events[i].setDescription("AUTODEL");
           events[i].deleteEvent();
@@ -235,6 +248,7 @@ function sheetsToCalendar() {
               allEvents[j][3] = events[i].getLocation();
               allEvents[j][4] = events[i].getDescription();
               events[i].setTag("eventId","spreadsheet");
+              events[i].setTag("email","NO");
               console.log("New Event Added from calendar: " + allEvents[j][0]);
               //events[i].setDescription("AUTODEL");
               //events[i].deleteEvent(); //removes event so not duplicated when spreadsheet events are sent to calendar
@@ -257,7 +271,7 @@ function sheetsToCalendar() {
         console.log("spreadsheet check: " + allEvents[i][0] + " " + events[j].getTitle());
       }
     }
-    if(allEvents[i][0] != "" && eventVal == false){
+    if(allEvents[i][0] != "" && eventVal == false){ //if new event from spreadsheet
       console.log("spreadsheetEvent found: " +  allEvents[i][0]);
         try{
           var event = allEvents[i];
@@ -269,6 +283,7 @@ function sheetsToCalendar() {
           var event2 = eventCal.createEvent(eventTitle,startTime,endTime, {description: notes});
           event2.setLocation(location);
           event2.setTag("eventId","spreadsheet");
+          event2.setTag("email","NO");
           event2.setColor("9");
           console.log("created new event " + event[0]);
         }
