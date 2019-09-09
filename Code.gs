@@ -228,6 +228,7 @@ function sheetsToCalendar() {
   var eventUpdate = false;
   for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
     spreadsheetVal = false;
+    eventUpdate = false;
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
       if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, updates spreadsheet data
           var eventStart = new Date(events[i].getStartTime());
@@ -251,8 +252,10 @@ function sheetsToCalendar() {
           eventUpdate = true;
         }
          events[i].setColor("9");
+        if (eventUpdate){
         events[i].setTag("update","YES");
         events[i].setTag("email","NO");
+        }
          console.log("Match found: " + allEvents[j][0]);
           spreadsheetVal = true;
           break;
