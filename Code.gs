@@ -23,7 +23,7 @@
 //To do: Rigorous testing, email reminders with seperate array
 //9/7/19 added basic email sending, to do: send day before only once, too tired now
 
-var eventRange = "A4:G30";
+var eventRange = "A4:H30";
 var spreadsheet = SpreadsheetApp.getActiveSheet();
 var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
@@ -53,8 +53,8 @@ function postMessageToDiscord(message) {
 
 
 function sendEmail(){
-  var allEvents = spreadsheet.getRange("A4:G30").getValues();
-  var allEvents2 = spreadsheet.getRange("A4:G30");
+  var allEvents = spreadsheet.getRange(eventRange).getValues();
+  var allEvents2 = spreadsheet.getRange(eventRange);
   var now = new Date();
   for(i=0;i < allEvents.length;i++){
    
@@ -118,10 +118,9 @@ function sendEmail(){
 function formatSheet(){ //trying to automatically format sheet if events removed, need to figure out how to make it go all the way up without getting stuck in loop
    var allEvents = spreadsheet.getRange(eventRange).getValues();
    var allEvents2 = spreadsheet.getRange(eventRange);
-  console.log("!: " + allEvents[10]);
-  console.log("!!!!: " + allEvents2);
+
   if (allEvents[0][0] == ""){
-    for(j=0;j < 7 ; j++){
+    for(j=0;j < 8 ; j++){
        allEvents[0][j] = allEvents[1][j];
            allEvents[1][j] = "";}
     }
@@ -132,7 +131,7 @@ function formatSheet(){ //trying to automatically format sheet if events removed
        while(w != 0 && allEvents[w-1][0] == ""){
          //allEvents[w-1][0] = allEvents[w][0];
          //allEvents[w][0] = "_";
-         for(j=0;j < 7 ; j++){
+         for(j=0;j < 8 ; j++){
          allEvents[w-1][j] = allEvents[w][j];
            allEvents[w][j] = "";}
          w--;
@@ -155,7 +154,7 @@ function removeOutdatedEvents(){ //removes any outdated events from spreadsheet 
   var events = eventCal.getEvents(oneYearBefore, twoWeeksBefore);
   for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
-      if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, removes spreadsheet data
+      if(allEvents[j][7] == events[i].getId()){ //finds spreadsheet match from calendar event, removes spreadsheet data
         allEvents[j][0] = "";
         allEvents[j][1] = "";
         allEvents[j][2] = "";
@@ -163,6 +162,7 @@ function removeOutdatedEvents(){ //removes any outdated events from spreadsheet 
         allEvents[j][4] = "";
         allEvents[j][5] = "";
         allEvents[j][6] = "";
+        allEvents[j][7] = "";
 
         events[i].setDescription("AUTODEL");
           events[i].deleteEvent(); //removes event to complete removal
@@ -195,8 +195,10 @@ function removeManualDeletedEvents(){
    for(j=0;j < allEvents.length;j++){ //checks all events in spreadsheet
      
      remove = true;
+     
      for(i=0;i<events.length;i++){ //for all current events in calendar (not removed events)
-       if (events[i].getTitle() == allEvents[j][0]){ //if current event in calendar has a counterpart on spreadsheet
+       //console.log("row " + j + " " + allEvents[j][7] +  " " + events[i].getId() );
+       if (events[i].getId() == allEvents[j][7]){ //if current event in calendar has a counterpart on spreadsheet
          remove = false; //doesn't remove
        }
      }
@@ -205,7 +207,7 @@ function removeManualDeletedEvents(){
          //console.log("a " + allEvents[j][0] + " j " + eventsAPI[w].summary);
          if(allEvents[j][0] == eventsAPI[w].summary && eventsAPI[w].description != "AUTODEL"){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
            
-           console.log(allEvents[j][0] + "deleted");
+           console.log(allEvents[j][0] +  " deleted");
            allEvents[j][0] = "";
            allEvents[j][1] = "";//&& allEvents[j][1] == eventsAPI[w].start.dateTime
            allEvents[j][2] = "";
@@ -213,6 +215,8 @@ function removeManualDeletedEvents(){
            allEvents[j][4] = "";
            allEvents[j][5] = "";
            allEvents[j][6] = "";
+           allEvents[j][7] = "";
+
 
          }
        }
@@ -230,11 +234,28 @@ function removeManualDeletedEvents(){
    allEvents2.setValues(allEvents);
 }
 
+
 function sheetsToCalendar() { 
   formatSheet();
   removeOutdatedEvents();
-  removeManualDeletedEvents();
-  
+  //removeManualDeletedEvents();
+    var response = Calendar.Events.list( 
+   calendarId, {
+    showDeleted: true,
+    fields: "items(summary,description,extendedProperties)",
+     orderBy: "updated",
+     maxResults: 500,
+     //iCalUID : "BRUH"
+     //}
+    });//gets calendar API data of events
+  console.log(response);
+   var eventsAPI = response.items; //list of event api data
+  for(w=0;w<eventsAPI.length;w++){
+    
+    console.log(eventsAPI[w].extendedProperties.shared.eventId);
+    
+   // Object.entries(eventsAPI[w].extendedProperties.shared
+  }
   
   
   var allEvents = spreadsheet.getRange(eventRange).getValues();
@@ -252,7 +273,10 @@ function sheetsToCalendar() {
     spreadsheetVal = false;
     eventUpdate = false;
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
-      if(allEvents[j][0] == events[i].getTitle()){ //finds spreadsheet match from calendar event, updates spreadsheet data
+      
+            //console.log("event list row: " + i + " " + events[i].getId());
+
+      if(allEvents[j][7] == events[i].getId()){ //finds spreadsheet match from calendar event, updates spreadsheet data
           var eventStart = new Date(events[i].getStartTime());
           var sheetStart = new Date(allEvents[j][1]);
           var eventEnd = new Date(events[i].getEndTime());
@@ -285,6 +309,7 @@ function sheetsToCalendar() {
       }
     }
     if (spreadsheetVal == false){ //if calendar event not in spreadsheet
+      console.log("spreadsheet val false row: " + i + " " + events[i].getId());
       if (events[i].getTag("eventId") == "spreadsheet"){
           events[i].setDescription("AUTODEL");
           events[i].deleteEvent();
@@ -297,6 +322,7 @@ function sheetsToCalendar() {
               allEvents[j][2] = events[i].getEndTime();
               allEvents[j][3] = events[i].getLocation();
               allEvents[j][4] = events[i].getDescription();
+              allEvents[j][7] = events[i].getId();
               events[i].setTag("eventId","spreadsheet");
               events[i].setTag("email","NO");
               console.log("New Event Added from calendar: " + allEvents[j][0]);
@@ -316,9 +342,9 @@ function sheetsToCalendar() {
   for (i=0; i<allEvents.length;i++){
     eventVal = false;
     for(j=0; j<events.length;j++){
-      if(allEvents[i][0] == events[j].getTitle()){
+      if(allEvents[i][0] == events[j].getId()){
         eventVal = true;
-        console.log("spreadsheet check: " + allEvents[i][0] + " " + events[j].getTitle());
+        console.log("spreadsheet check: " + allEvents[i][0] + " " + events[j].getId());
       }
     }
     if(allEvents[i][0] != "" && eventVal == false){ //if new event from spreadsheet
@@ -335,7 +361,11 @@ function sheetsToCalendar() {
           event2.setTag("eventId","spreadsheet");
           event2.setTag("email","NO");
           event2.setColor("9");
+          var unique = new Date(now.getTime());
+          event2.setId(unique);
+          allEvents[i][7] = unique;
           console.log("created new event " + event[0]);
+          console.log("row: " + i + " " + event2.getId());
         }
       catch(e){
         console.error('new sheet event sync yielded an error: ' + e);
@@ -352,7 +382,8 @@ function sheetsToCalendar() {
     formatSheet();
   
   
-  sendEmail();
+  //sendEmail();
+
 }
 
 function onOpen(){ //creates button next to help that runs the function without needing to open script editor
