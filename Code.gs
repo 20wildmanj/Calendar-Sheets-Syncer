@@ -60,7 +60,7 @@ function sendEmail(){
    
     if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
       
-      var TwoDaysFromNow = new Date(now.getTime() + (2*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
+      var TwoDaysFromNow = new Date(now.getTime() + (3*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
       var events = eventCal.getEvents(new Date(now.getTime()), TwoDaysFromNow);
       
       var selectedEvent = 0;
@@ -73,7 +73,7 @@ function sendEmail(){
         }
         console.log(events[selectedEvent].getTitle());
        
-        var timeDiff = (events[selectedEvent].getStartTime() - now.getTime())/(24*60*60*1000);
+        var timeDiff = (events[selectedEvent].getStartTime() - now.getTime())/(2*24*60*60*1000);
         console.log("event name: " + events[selectedEvent].getTitle());
         console.log("event: " + events[selectedEvent].getStartTime());
         console.log("now: " + now.getTime());
@@ -93,7 +93,7 @@ function sendEmail(){
              var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedStartTime;
           }
           var body = HtmlService.createTemplateFromFile("emailFormat");
-          postMessageToDiscord(Subject);
+          
           body.eventName = allEvents[i][0];
           body.eventStartDate = formattedStartTime;
           body.eventEndDate = formattedEndTime;
@@ -105,6 +105,7 @@ function sendEmail(){
             subject: Subject,
             htmlBody: body.evaluate().getContent()
           });
+          postMessageToDiscord(Subject + formattedEndTime);
           events[selectedEvent].setTag("email","YES");
       }
       }
