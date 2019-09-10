@@ -181,12 +181,14 @@ function removeManualDeletedEvents(){
   
    var allEvents = spreadsheet.getRange(eventRange).getValues(); //gets event data from spreadsheet
    var allEvents2 = spreadsheet.getRange(eventRange); //gets event data format so changed values can be put back in the spreadsheet 
-   var response = Calendar.Events.list( 
+   
+    var response = Calendar.Events.list( 
    calendarId, {
     showDeleted: true,
-    fields: "items(summary,description)",
+    fields: "items(summary,description,extendedProperties)",
      orderBy: "updated",
-     maxResults: 500
+     maxResults: 500,
+     
     });//gets calendar API data of events
   //console.log(response);
    var eventsAPI = response.items; //list of event api data
@@ -198,16 +200,17 @@ function removeManualDeletedEvents(){
      
      for(i=0;i<events.length;i++){ //for all current events in calendar (not removed events)
        //console.log("row " + j + " " + allEvents[j][7] +  " " + events[i].getId() );
-       if (events[i].getId() == allEvents[j][7]){ //if current event in calendar has a counterpart on spreadsheet
+       if (events[i].getTag("identifier") == allEvents[j][7]){ //if current event in calendar has a counterpart on spreadsheet
          remove = false; //doesn't remove
        }
      }
      if (remove == true && allEvents[j][0] != ""){ //if item in spreadsheet does not have counter part in calendar
        for(w=0;w<eventsAPI.length;w++){ //goes through all previous events, including deleted events
          //console.log("a " + allEvents[j][0] + " j " + eventsAPI[w].summary);
-         if(allEvents[j][0] == eventsAPI[w].summary && eventsAPI[w].description != "AUTODEL"){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
+         //console.log(eventsAPI[w].extendedProperties.shared.identifier);
+         if(allEvents[j][7] == eventsAPI[w].extendedProperties.shared.identifier && eventsAPI[w].description != "AUTODEL"){ //if event in spreadsheet matches event in previous events, removes it from spreadsheet
            
-           console.log(allEvents[j][0] +  " deleted");
+           console.log(allEvents[j][0] +  " deleted " + allEvents[j][7] + " eventId " + eventsAPI[w].extendedProperties.shared.identifier);
            allEvents[j][0] = "";
            allEvents[j][1] = "";//&& allEvents[j][1] == eventsAPI[w].start.dateTime
            allEvents[j][2] = "";
@@ -216,7 +219,7 @@ function removeManualDeletedEvents(){
            allEvents[j][5] = "";
            allEvents[j][6] = "";
            allEvents[j][7] = "";
-
+           
 
          }
        }
@@ -245,17 +248,10 @@ function guidGenerator() {
 function sheetsToCalendar() { 
   formatSheet();
   removeOutdatedEvents();
-  //removeManualDeletedEvents();
-    var response = Calendar.Events.list( 
-   calendarId, {
-    showDeleted: true,
-    fields: "items(summary,description,extendedProperties)",
-     orderBy: "updated",
-     maxResults: 500,
-     
-    });//gets calendar API data of events
-  console.log(response);
-   var eventsAPI = response.items; //list of event api data
+  removeManualDeletedEvents();
+   //gets calendar API data of events
+  //console.log(response);
+   //var eventsAPI = response.items; //list of event api data
   //for(w=0;w<eventsAPI.length;w++){
     
 //console.log(eventsAPI[w].extendedProperties.shared.eventId);
