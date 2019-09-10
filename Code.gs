@@ -235,6 +235,13 @@ function removeManualDeletedEvents(){
 }
 
 
+function guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+
 function sheetsToCalendar() { 
   formatSheet();
   removeOutdatedEvents();
@@ -245,17 +252,16 @@ function sheetsToCalendar() {
     fields: "items(summary,description,extendedProperties)",
      orderBy: "updated",
      maxResults: 500,
-     //iCalUID : "BRUH"
-     //}
+     
     });//gets calendar API data of events
   console.log(response);
    var eventsAPI = response.items; //list of event api data
-  for(w=0;w<eventsAPI.length;w++){
+  //for(w=0;w<eventsAPI.length;w++){
     
-    console.log(eventsAPI[w].extendedProperties.shared.eventId);
+//console.log(eventsAPI[w].extendedProperties.shared.eventId);
     
    // Object.entries(eventsAPI[w].extendedProperties.shared
-  }
+  //}
   
   
   var allEvents = spreadsheet.getRange(eventRange).getValues();
@@ -276,16 +282,19 @@ function sheetsToCalendar() {
       
             //console.log("event list row: " + i + " " + events[i].getId());
 
-      if(allEvents[j][7] == events[i].getId()){ //finds spreadsheet match from calendar event, updates spreadsheet data
+      if(allEvents[j][7] == events[i].getTag("identifier") && allEvents[j][7] != ""){ //finds spreadsheet match from calendar event, updates spreadsheet data
           var eventStart = new Date(events[i].getStartTime());
           var sheetStart = new Date(allEvents[j][1]);
           var eventEnd = new Date(events[i].getEndTime());
           var sheetEnd = new Date(allEvents[j][2]);
+        
         if (eventStart.getTime() != sheetStart.getTime() || eventEnd.getTime() != sheetEnd.getTime()){
           //allEvents[j][1] != events[i].getStartTime() || allEvents[j][1] != events[i].getEndTime()
-          events[i].setTime(allEvents[j][1],allEvents[j][2]);
+          events[i].setTime(sheetStart,sheetEnd);
           eventUpdate = true;
           console.log("start time diff: " + allEvents[j][1] + " " + allEvents[j][2] + " " + events[i].getStartTime());
+          console.log("event " + eventStart.getTime() + " end " + eventEnd.getTime());
+          console.log("spread " + sheetStart.getTime() + " end " + sheetEnd.getTime());
         }
         if (events[i].getLocation() != allEvents[j][3]){
           console.log("location diff: " + allEvents[j][3]);
@@ -322,7 +331,11 @@ function sheetsToCalendar() {
               allEvents[j][2] = events[i].getEndTime();
               allEvents[j][3] = events[i].getLocation();
               allEvents[j][4] = events[i].getDescription();
-              allEvents[j][7] = events[i].getId();
+
+              var unique = guidGenerator();
+              events[i].setTag("identifier",unique);
+              allEvents[j][7] = unique;
+              
               events[i].setTag("eventId","spreadsheet");
               events[i].setTag("email","NO");
               console.log("New Event Added from calendar: " + allEvents[j][0]);
@@ -342,9 +355,10 @@ function sheetsToCalendar() {
   for (i=0; i<allEvents.length;i++){
     eventVal = false;
     for(j=0; j<events.length;j++){
-      if(allEvents[i][0] == events[j].getId()){
+      console.log("spreadsheet check: " + allEvents[i][7] + " " + events[j].getTag("identifier"));
+      if(allEvents[i][7] == events[j].getTag("identifier")){
         eventVal = true;
-        console.log("spreadsheet check: " + allEvents[i][0] + " " + events[j].getId());
+        console.log("spreadsheet YES: " + allEvents[i][7] + " " + events[j].getTag("identifier"));
       }
     }
     if(allEvents[i][0] != "" && eventVal == false){ //if new event from spreadsheet
@@ -361,8 +375,8 @@ function sheetsToCalendar() {
           event2.setTag("eventId","spreadsheet");
           event2.setTag("email","NO");
           event2.setColor("9");
-          var unique = new Date(now.getTime());
-          event2.setId(unique);
+          var unique = guidGenerator();//new Date(now.getTime());
+          event2.setTag("identifier", unique);
           allEvents[i][7] = unique;
           console.log("created new event " + event[0]);
           console.log("row: " + i + " " + event2.getId());
