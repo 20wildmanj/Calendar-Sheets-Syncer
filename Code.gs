@@ -22,6 +22,7 @@
 //completed formatting function that automatically gets rid of empty row between rows filled in with events, just for ease of use I guess
 //To do: Rigorous testing, email reminders with seperate array
 //9/7/19 added basic email sending, to do: send day before only once, too tired now
+//9/10/19 everything is on github, has been for a while so less updates here
 
 var eventRange = "A4:H30";
 var spreadsheet = SpreadsheetApp.getActiveSheet();
@@ -238,7 +239,7 @@ function removeManualDeletedEvents(){
 }
 
 
-function guidGenerator() {
+function guidGenerator() { //random generator for id
     var S4 = function() {
        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
     };
@@ -249,15 +250,7 @@ function sheetsToCalendar() {
   formatSheet();
   removeOutdatedEvents();
   removeManualDeletedEvents();
-   //gets calendar API data of events
-  //console.log(response);
-   //var eventsAPI = response.items; //list of event api data
-  //for(w=0;w<eventsAPI.length;w++){
-    
-//console.log(eventsAPI[w].extendedProperties.shared.eventId);
-    
-   // Object.entries(eventsAPI[w].extendedProperties.shared
-  //}
+   
   
   
   var allEvents = spreadsheet.getRange(eventRange).getValues();
