@@ -29,6 +29,27 @@ var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
 var now = new Date();
 
+function postMessageToDiscord(message) {
+
+  message = message || "Error: Message not found";
+  
+  var discordUrl = 'https://discordapp.com/api/webhooks/620798955286167572/TPEzW70z5ExYG02gFPbMpapGryWz3pRBMr70bbDPvjYhroEQawfKdh8mqqftmKAplY1c';
+  var payload = JSON.stringify({content: message});
+  
+  var params = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    method: "POST",
+    payload: payload,
+    muteHttpExceptions: true
+  };
+  
+  var response = UrlFetchApp.fetch(discordUrl, params);
+  
+  Logger.log(response.getContentText());
+
+}
 
 
 function sendEmail(){
@@ -72,7 +93,7 @@ function sendEmail(){
              var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedStartTime;
           }
           var body = HtmlService.createTemplateFromFile("emailFormat");
-          
+          postMessageToDiscord(Subject);
           body.eventName = allEvents[i][0];
           body.eventStartDate = formattedStartTime;
           body.eventEndDate = formattedEndTime;
