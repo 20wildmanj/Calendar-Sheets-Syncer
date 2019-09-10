@@ -105,7 +105,7 @@ function sendEmail(){
             subject: Subject,
             htmlBody: body.evaluate().getContent()
           });
-          postMessageToDiscord(Subject + formattedEndTime);
+          postMessageToDiscord(Subject + "-" + formattedEndTime);
           events[selectedEvent].setTag("email","YES");
       }
       }
