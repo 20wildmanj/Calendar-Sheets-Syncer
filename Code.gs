@@ -30,13 +30,7 @@ var calendarId = spreadsheet.getRange("D2").getValue();
 var eventCal = CalendarApp.getCalendarById(calendarId);
 var now = new Date();
 
-function getUserName(email){
-  email = "20raffonen@asij.ac.jp";
-  var result = AdminDirectory.Users.get(email, {fields:'name',viewType:'domain_public'});
-var fullname = result.name.fullName;
-console.log(fullname);
-return fullname;
-}
+
 function postMessageToDiscord(message) {
 
   message = message || "Error: Message not found";
