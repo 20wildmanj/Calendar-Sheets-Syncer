@@ -72,7 +72,11 @@ function sendEmail2(){
                 var recipientsCC = "";
                 var formattedStartTime = Utilities.formatDate(allEvents[j][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
                 var formattedEndTime = Utilities.formatDate(allEvents[j][2], Session.getScriptTimeZone(), "h:mm a");
-                if ( events[i].getTag("update") == "YES"){
+                if ( events[i].getTag("update") == "YES" && allEvents[j][4] == "CANCELLED"){
+                  var Subject = "Event Canceled: " + allEvents[j][0] + ", " + formattedStartTime;
+                  var header = "An upcoming event has been CANCELED:";
+                }
+                else if ( events[i].getTag("update") == "YES"){
                   var Subject = "Event Updated: " + allEvents[j][0] + ", " + formattedStartTime;
                   var header = "An upcoming event has been updated:";
                   
