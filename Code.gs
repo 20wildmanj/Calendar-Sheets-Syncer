@@ -151,7 +151,7 @@ function removeOutdatedEvents(){ //removes any outdated events from spreadsheet 
   var allEvents = spreadsheet.getRange(eventRange).getValues(); //gets event data from spreadsheet
   var allEvents2 = spreadsheet.getRange(eventRange);//gets event data format so changed values can be put back in the spreadsheet
   var now = new Date();
-  var twoWeeksBefore = new Date(now.getTime() - (14*24 * 60 * 60 * 1000));
+  var twoWeeksBefore = new Date(now.getTime() - (7*24 * 60 * 60 * 1000));
   var oneYearBefore = new Date(now.getTime() - (180*24 * 60 * 60 * 1000)); //used to find events from one year to two weeks before now
   var events = eventCal.getEvents(oneYearBefore, twoWeeksBefore);
   for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
@@ -386,7 +386,7 @@ function sheetsToCalendar() {
     formatSheet();
   
   
-  sendEmail2();
+ 
 
 }
 
@@ -396,6 +396,6 @@ ui.createMenu("Sync")
   .addItem( "Sync calendar","sheetsToCalendar")
 .addToUi();
 ui.createMenu("Reminder")
-  .addItem( "Manually send reminder","sendEmail")
+  .addItem( "Manually send reminder","sendEmail2")
 .addToUi();
 }

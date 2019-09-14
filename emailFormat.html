@@ -7,27 +7,33 @@
     <base target="_top" />
   </head>
   <body>
- 
-      <div style="text-align:center">
-        <h2 style="background-color:ROYALBLUE; color:rgb(0, 4, 4);border-radius: 25px; padding: 10px; margin-right: 200px;margin-left: 200px">
+        <div style = "background-color: rgb(240, 240, 240);border-style: hidden; padding-bottom: 0px;margin-bottom: 0px;">
+      <div style="text-align:center;">
+        <h2 style="background-color:SteelBlue ; color:rgb(0, 4, 4); padding: 10px;">
         <font face = "Roboto" color = "white">ASIJ Robotics Club</font>
           
         </h2>
       </div>
    
       <div>
-       <div style="text-align:center">
+       <div style="text-align:center;">
       <font face = "Roboto" size = "+1">
+       <div style= "padding-bottom: 5px">
         <p> Hello,<p>
         <p> <?= header ?> </p>
         <p> <strong>Event: </strong> (<?= eventName ?>) </p>
         <p> <strong>Date: </strong> (<?= eventStartDate ?> to <?= eventEndDate ?>)</p>
         <p> <strong>Location: </strong> (<?= eventLocation ?>) </p>
         <p> <strong>Additional Info: </strong> (<?= description ?>) </p>
-        <p> <br><br> <small><i>This is an automated email, please do not reply to this address. Communicate with your captains if you have any conflicts.</i></small></p>
-         <p> <br><br> <small><i><font face = "Roboto" size = "-1">This email was sent to <?= email ?> </font></i></small></p>
+         </div> 
+         </div>
+        </div>
+        <div style="text-align:center;background-color: #b4b4b4;padding-bottom: 10px;"> 
+        <p> <br> <small><i>This is an automated email, please do not reply to this address. Communicate with your captains if you have any conflicts.</i></small></p>
+         <p>  <small><i><font face = "Roboto" size = "-1">This email was sent to <?= email ?> </font></i></small></p>
         </font>
-       </div>
-    </div>
+        </div>
+         </div>
+      
   </body>
 </html>
