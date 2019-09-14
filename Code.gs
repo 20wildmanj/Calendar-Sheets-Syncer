@@ -53,7 +53,7 @@ function postMessageToDiscord(message) {
 
 }
 
-function sendEmail2(){
+function sendEmail2(){//fixed email function
   var allEvents = spreadsheet.getRange(eventRange).getValues();
   var allEvents2 = spreadsheet.getRange(eventRange);
   var now = new Date();
@@ -112,7 +112,6 @@ function sendEmail2(){
               }
           }
         }
-
       }
     
   }
