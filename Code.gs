@@ -35,7 +35,7 @@ function postMessageToDiscord(message) {
 
   message = message || "Error: Message not found";
   
-  var discordUrl = 'https://discordapp.com/api/webhooks/620798955286167572/TPEzW70z5ExYG02gFPbMpapGryWz3pRBMr70bbDPvjYhroEQawfKdh8mqqftmKAplY1c';
+  var discordUrl = 'https://discordapp.com/api/webhooks/622320640795344896/kqhn0_ibcHlI0xFcago-sQlMdPlosHx4g_WsZojuZLI53yLpBWCF2fvRrj_mYnRsX2T9';
   var payload = JSON.stringify({content: message});
   
   var params = {
@@ -53,69 +53,69 @@ function postMessageToDiscord(message) {
 
 }
 
-
-function sendEmail(){
+function sendEmail2(){
   var allEvents = spreadsheet.getRange(eventRange).getValues();
   var allEvents2 = spreadsheet.getRange(eventRange);
   var now = new Date();
-  for(i=0;i < allEvents.length;i++){
-   
-    if(allEvents[i][5] == "Y" || allEvents[i][5] == "YES"){
-      
-      var TwoDaysFromNow = new Date(now.getTime() + (3*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
-      var events = eventCal.getEvents(new Date(now.getTime()), TwoDaysFromNow);
-      
-      var selectedEvent = 0;
-      if (events.length > 0){
-        for (j = 0; j < events.length; j++){
-          if (events[j].getTitle() == allEvents[i][0] && allEvents[i][0] != ""){
-            selectedEvent = j;
-            break;
+  var TwoDaysFromNow = new Date(now.getTime() + (3*24 * 60 * 60 * 1000)); //used to find events from now to 1 year in the future
+  var events = eventCal.getEvents(new Date(now.getTime()), TwoDaysFromNow);
+  
+    if (events.length > 0){
+      for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
+        for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
+          if(allEvents[j][7] == events[i].getTag("identifier")){ //finds spreadsheet match from calendar event, removes spreadsheet data
+              var timeDiff = (events[i].getStartTime() - now.getTime())/(2*24*60*60*1000);
+              if (events[i].getTag("email") == "NO" && timeDiff <= 1.0){
+                var recipientsTO = allEvents[j][6];
+                var mailArray = recipientsTO.split(",");
+                console.log(mailArray);
+                var recipientsCC = "";
+                var formattedStartTime = Utilities.formatDate(allEvents[j][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
+                var formattedEndTime = Utilities.formatDate(allEvents[j][2], Session.getScriptTimeZone(), "h:mm a");
+                if ( events[i].getTag("update") == "YES"){
+                  var Subject = "Event Updated: " + allEvents[j][0] + ", " + formattedStartTime;
+                  var header = "An upcoming event has been updated:";
+                  
+                  events[i].setTag("update","NO");
+                } else{
+                  var Subject = "Event Reminder: " + allEvents[j][0] + ", " + formattedStartTime;
+                  var header = "This is a reminder of an upcoming event:";
+                  
+                }
+                var body = HtmlService.createTemplateFromFile("emailFormat");
+                
+                body.eventName = allEvents[j][0];
+                body.header = header;
+                body.eventStartDate = formattedStartTime;
+                body.eventEndDate = formattedEndTime;
+                body.eventLocation = allEvents[j][3];
+                body.description = allEvents[j][4];
+                console.log("EVENT MAILED " + body.eventName);
+                
+                for (h = 0; h < mailArray.length; h++)
+                {
+                  body.email = mailArray[h];
+                  MailApp.sendEmail({
+                    to: mailArray[h],
+                    cc: recipientsCC,
+                    subject: Subject,
+                    htmlBody: body.evaluate().getContent()
+                  });
+                  
+                }
+                postMessageToDiscord(Subject + "-" + formattedEndTime);
+                events[i].setTag("email","YES");
+              }
           }
         }
-        console.log(events[selectedEvent].getTitle());
-       
-        var timeDiff = (events[selectedEvent].getStartTime() - now.getTime())/(2*24*60*60*1000);
-        console.log("event name: " + events[selectedEvent].getTitle());
-        console.log("event: " + events[selectedEvent].getStartTime());
-        console.log("now: " + now.getTime());
-        console.log("test " + timeDiff);
-        console.log(timeDiff <= 1.0);
-        if (events[selectedEvent].getTag("email") == "NO" && timeDiff <= 1.0){
-          console.log("new email needed " + events[selectedEvent].getTitle());
-          
-          var recipientsTO = allEvents[i][6];
-          var recipientsCC = "joebewildman@gmail.com";
-          var formattedStartTime = Utilities.formatDate(allEvents[i][1], Session.getScriptTimeZone(), "EEE, MMM d, h:mm a");
-          var formattedEndTime = Utilities.formatDate(allEvents[i][2], Session.getScriptTimeZone(), "h:mm a");
-          if ( events[selectedEvent].getTag("update") == "YES"){
-             var Subject = "Event Updated: " + allEvents[i][0] + ", " + formattedStartTime;
-            events[selectedEvent].setTag("update","NO");
-          } else{
-             var Subject = "Event Reminder: " + allEvents[i][0] + ", " + formattedStartTime;
-          }
-          var body = HtmlService.createTemplateFromFile("emailFormat");
-          
-          body.eventName = allEvents[i][0];
-          body.eventStartDate = formattedStartTime;
-          body.eventEndDate = formattedEndTime;
-          body.eventLocation = allEvents[i][3];
-          body.description = allEvents[i][4];
-          MailApp.sendEmail({
-            to: recipientsTO,
-            cc: recipientsCC,
-            subject: Subject,
-            htmlBody: body.evaluate().getContent()
-          });
-          postMessageToDiscord(Subject + "-" + formattedEndTime);
-          events[selectedEvent].setTag("email","YES");
       }
-      }
-    }
+    
   }
-  var emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+   var emailQuotaRemaining = MailApp.getRemainingDailyQuota();
   console.log(emailQuotaRemaining);
 }
+
+
 
 function formatSheet(){ //trying to automatically format sheet if events removed, need to figure out how to make it go all the way up without getting stuck in loop
    var allEvents = spreadsheet.getRange(eventRange).getValues();
@@ -156,7 +156,7 @@ function removeOutdatedEvents(){ //removes any outdated events from spreadsheet 
   var events = eventCal.getEvents(oneYearBefore, twoWeeksBefore);
   for (i=0;i<events.length;i++){ //all events in cal from over two weeks ago
     for(j=0;j < allEvents.length;j++){ //all events in spreadsheet
-      if(allEvents[j][7] == events[i].getId()){ //finds spreadsheet match from calendar event, removes spreadsheet data
+      if(allEvents[j][7] == events[i].getTag("identifier")){ //finds spreadsheet match from calendar event, removes spreadsheet data
         allEvents[j][0] = "";
         allEvents[j][1] = "";
         allEvents[j][2] = "";
@@ -386,7 +386,7 @@ function sheetsToCalendar() {
     formatSheet();
   
   
-  //sendEmail();
+  sendEmail2();
 
 }
 
